@@ -1,0 +1,4 @@
+config USB_DEVICE_REMOTE_WAKEUP
+	default y if NRFX_USBD
+
+source "Kconfig.zephyr"
