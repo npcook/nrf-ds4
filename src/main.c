@@ -1,12 +1,12 @@
-#include <zephyr.h>
-#include <device.h>
-#include <drivers/gpio.h>
-#include <drivers/uart.h>
+#include <zephyr/kernel.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/gpio.h>
+#include <zephyr/drivers/uart.h>
 
-#include <usb/usb_device.h>
-#include <usb/class/usb_hid.h>
+#include <zephyr/usb/usb_device.h>
+#include <zephyr/usb/class/usb_hid.h>
 
-#include <timing/timing.h>
+#include <zephyr/timing/timing.h>
 
 #include <math.h>
 
@@ -20,14 +20,6 @@ LOG_MODULE_REGISTER(main);
 #endif
 
 static const struct gpio_dt_spec led0 = GPIO_DT_SPEC_GET_OR(LED0_NODE, gpios, {});
-
-static const uint8_t hid_report_desc[] = HID_MOUSE_REPORT_DESC(2);
-
-// static const uint8_t hid_gamepad_report_desc[] =
-// {
-//     HID_COLLECTION_PHYSICAL()
-// };
-
 
 static const uint8_t gamepad_report_desc[] =
 {
@@ -407,27 +399,27 @@ static int handle_get_report(
     return -1;
 }
 
-void setup_logging(void)
-{
-    const struct device *console_dev = device_get_binding(
-            CONFIG_UART_CONSOLE_ON_DEV_NAME);
-    uint32_t dtr = 0;
+// void setup_logging(void)
+// {
+//     const struct device *console_dev = device_get_binding(
+//             CONFIG_UART_CONSOLE_ON_DEV_NAME);
+//     uint32_t dtr = 0;
 
-    if (usb_enable(NULL)) {
-        return;
-    }
+//     if (usb_enable(NULL)) {
+//         return;
+//     }
 
-    while (!dtr) {
-        uart_line_ctrl_get(console_dev, UART_LINE_CTRL_DTR, &dtr);
-    }
+//     while (!dtr) {
+//         uart_line_ctrl_get(console_dev, UART_LINE_CTRL_DTR, &dtr);
+//     }
 
-    if (strlen(CONFIG_UART_CONSOLE_ON_DEV_NAME) !=
-        strlen("CDC_ACM_0") ||
-        strncmp(CONFIG_UART_CONSOLE_ON_DEV_NAME, "CDC_ACM_0",
-            strlen(CONFIG_UART_CONSOLE_ON_DEV_NAME))) {
-        printk("Error: Console device name is not USB ACM\n");
-    }
-}
+//     if (strlen(CONFIG_UART_CONSOLE_ON_DEV_NAME) !=
+//         strlen("CDC_ACM_0") ||
+//         strncmp(CONFIG_UART_CONSOLE_ON_DEV_NAME, "CDC_ACM_0",
+//             strlen(CONFIG_UART_CONSOLE_ON_DEV_NAME))) {
+//         printk("Error: Console device name is not USB ACM\n");
+//     }
+// }
 
 void main(void)
 {
