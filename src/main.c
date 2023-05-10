@@ -11,6 +11,7 @@
 #include <math.h>
 
 #define LOG_LEVEL LOG_LEVEL_DBG
+
 LOG_MODULE_REGISTER(main);
 
 #define LED0_NODE DT_ALIAS(led0)
@@ -399,45 +400,40 @@ static int handle_get_report(
     return -1;
 }
 
-// void setup_logging(void)
-// {
-//     const struct device *console_dev = device_get_binding(
-//             CONFIG_UART_CONSOLE_ON_DEV_NAME);
-//     uint32_t dtr = 0;
+#if CONFIG_LOG
+void setup_logging(void)
+{
+    const struct device *console_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_console));
 
-//     if (usb_enable(NULL)) {
-//         return;
-//     }
-
-//     while (!dtr) {
-//         uart_line_ctrl_get(console_dev, UART_LINE_CTRL_DTR, &dtr);
-//     }
-
-//     if (strlen(CONFIG_UART_CONSOLE_ON_DEV_NAME) !=
-//         strlen("CDC_ACM_0") ||
-//         strncmp(CONFIG_UART_CONSOLE_ON_DEV_NAME, "CDC_ACM_0",
-//             strlen(CONFIG_UART_CONSOLE_ON_DEV_NAME))) {
-//         printk("Error: Console device name is not USB ACM\n");
-//     }
-// }
+    uint32_t dtr = 0;
+    while (!dtr)
+    {
+        uart_line_ctrl_get(console_dev, UART_LINE_CTRL_DTR, &dtr);
+        k_sleep(K_MSEC(10));
+    }
+}
+#endif
 
 void main(void)
 {
     int ret;
 
-    if (!device_is_ready(led0.port)) {
+    if (!device_is_ready(led0.port))
+    {
         LOG_ERR("LED device %s is not ready", led0.port->name);
         return;
     }
 
     hid_dev = device_get_binding("HID_0");
-    if (hid_dev == NULL) {
+    if (hid_dev == NULL)
+    {
         LOG_ERR("Cannot get USB HID Device");
         return;
     }
 
     ret = gpio_pin_configure_dt(&led0, GPIO_OUTPUT);
-    if (ret < 0) {
+    if (ret < 0)
+    {
         LOG_ERR("Failed to configure the LED pin, error: %d", ret);
         return;
     }
@@ -453,13 +449,16 @@ void main(void)
 
     usb_hid_init(hid_dev);
 
-    // setup_logging();
-
     ret = usb_enable(status_cb);
-    if (ret != 0) {
+    if (ret != 0)
+    {
         LOG_ERR("Failed to enable USB");
         return;
     }
+
+#if CONFIG_LOG
+    setup_logging();
+#endif
 
     k_timer_init(&gamepad_timer, gamepad_timer_cb, NULL);
     k_timer_start(&gamepad_timer, K_MSEC(4000), K_MSEC(4));
